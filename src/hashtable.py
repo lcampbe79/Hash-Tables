@@ -6,6 +6,13 @@ class LinkedPair:
         self.key = key
         self.value = value
         self.next = None
+    
+    # Returns a tuple as a string
+    def __str__(self):
+        key = self.key
+        value = self.value
+        return "A tuple of {}, {}".format(key, value)
+
 
 class HashTable:
     '''
@@ -14,9 +21,8 @@ class HashTable:
     '''
     def __init__(self, capacity):
         self.capacity = capacity  # Number of buckets in the hash table
-        self.storage = [None] * capacity
-        self.count = 0
-
+        self.storage = [None] * capacity # Empty spaces in the list
+      
 
     def _hash(self, key):
         '''
@@ -55,12 +61,31 @@ class HashTable:
 
         Fill this in.
         '''
-        if self.count >= self.capacity:
-            self.resize()
-        for i in range(self.count, key, -1):
-            self.storage[i] = self.storage[i-1]
-        self.storage[key] = value
-        self.count +=1
+        # Checks if there's a value
+        index = self._hash_mod(key)
+        if self.storage[index] is not None:
+            # Traverse the LinkedPair to see if key exists
+            current_index = self.storage[index]
+            while current_index is not None:
+                current_index.value = value
+                current_index = current_index.next
+
+            # If the key doesn't exist add it to the beginning
+            new_index = LinkedPair(key, value)
+            new_index.next = self.storage[index]
+            self.storage[index] = new_index
+        # If no key then add it to the beginning
+        else:
+            self.storage[index] = LinkedPair(key, value)
+
+        # # Find the index (value). Grab the key, hash it to turn it into an index in the array
+        # index = self._hash_mod(key) #<- puts into the index
+        # # Checks for an error at the index
+        # if self.storage[index] is not None:
+        #     print("Error: Key in use")
+        # else:
+        #     # Puts key in if no error
+        #     self.storage[index] = LinkedPair(key, value)
 
 
 
@@ -71,8 +96,41 @@ class HashTable:
         Print a warning if the key is not found.
 
         Fill this in.
-        '''
-        pass
+        ''' 
+        index = self._hash_mod(key)
+        # Check the index
+        if self.storage[index] is not None:
+            head = self.storage[index]
+            if head.next is None:
+                # Since at the head, can just remove it
+                self.storage[index] = None
+            else:
+                # Traverse the LinkedPair
+                if head.key == key:
+                    self.storage[index] = head.next
+                else:
+                    prev = head
+                    current = prev.next
+                    
+                    while current is not None:
+                        # Check for the right key
+                        if key == current.key:
+                            # If it's the right key, replace with None
+                            prev.next = current.next
+                        current = current.next
+            
+        # If doesn't exist, return None
+        else:
+            return None
+       
+        # # Find the index
+        # index = self._hash_mod(key) #<- puts into the index
+        # # Checks if there is a value store at the index
+        # if self.storage[index] is not None:
+        #     # Sets it to NONE
+        #     self.storage[index] = None
+        # else:
+        #     print("Warning: Key is not found.")
 
 
     def retrieve(self, key):
@@ -83,7 +141,9 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        index = self._hash_mod(key)
+        return self.storage[index]
+       
 
 
     def resize(self):
@@ -93,11 +153,16 @@ class HashTable:
 
         Fill this in.
         '''
-        self.capacity *= 2
-        new_storage = [None] * self.capacity
-        for i in range(self.count):
-            new_storage[i] = self.storage[i]
-        self.storage = new_storage
+        old_storage = self.storage
+
+        # Replace everything and double capacity
+        self.capacity = self.capacity * 2
+        # Make new storage
+        self.storage = [None] * self.capacity
+
+        # Put everything in new key/value pairs
+        for bucket_item in old_storage:
+            self.insert(bucket_item.key, bucket_item.value)
 
 
 
