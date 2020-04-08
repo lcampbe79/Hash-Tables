@@ -64,7 +64,7 @@ class HashTable:
 
         Fill this in.
         '''
-        # 1. Compute index of key
+        # 1. Compute index/hash of key
         index = self._hash_mod(key)
         # print(index)
         # 2. Go to the current index (node) with that hashed index
@@ -74,17 +74,24 @@ class HashTable:
         if current_index is None:
             # Create current index (node), add it, return
             self.storage[index] = LinkedPair(key, value)
-            
-            return
-
-        # 4. Collision! Iterate to the end of the linked list at provided index
-        prev_index = current_index
-        while current_index is not None:
+        # If there is only a key and no value 
+        elif current_index.key == key: #if just one thing in the key and matches
+            # Update the value
+            current_index.value= value #to change the value
+        else:
+            # 4. Collision! Iterate to the end of the linked list at provided index
             prev_index = current_index
-            current_index = current_index.next
-            print(f"Collision occured: {prev_index} already has the same key ")
-        # Add a new previous index (node) at the end of the list with provided key/value
-        prev_index.next = LinkedPair(key, value)
+            # While loop is running, and the prev_index key matches the current key
+            while prev_index.next is not None and prev_index.key != key:
+                prev_index = prev_index.next
+                print(f"Collision occured: {prev_index} already has the same key ")
+            # If the keys match
+            if prev_index.key == key:
+                # Update the value
+                prev_index.value = value #to change the value
+            # Add a new previous index (node) at the end of the list with provided key/value
+            prev_index.next = LinkedPair(key, value)
+        
 
 
     def remove(self, key):
