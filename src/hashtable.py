@@ -118,13 +118,13 @@ class HashTable:
         index = self._hash_mod(key)
         # Goes to the first slot with that hashed index
         current_index = self.storage[index]
-        # print(index)
+        # print(f"this is at index", index)
 
         # if current_index is None:
         #     return None 
         # Goes through the LinkedPair at this hashed index (node)
         while current_index:
-            # Current index is now either requested kvp OR Nonw
+            # Current index is now either requested kvp OR None
             if current_index.key is not key:
                 current_index = current_index.next 
             else:
