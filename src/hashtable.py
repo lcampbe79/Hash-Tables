@@ -1,11 +1,21 @@
 # '''
 # Linked List hash table key/value pair
 # '''
-class LinkedPair:
+class LinkedPair: #(Node)
     def __init__(self, key, value):
         self.key = key
         self.value = value
         self.next = None
+    
+    def __repr__(self):
+        return f"<{self.key}, {self.value}, {self.next}>"
+
+    # # Returns a tuple as a string
+    # def __str__(self):
+    #     key = self.key
+    #     value = self.value
+    #     return "{}, {}".format(key, value)
+
 
 class HashTable:
     '''
@@ -14,9 +24,8 @@ class HashTable:
     '''
     def __init__(self, capacity):
         self.capacity = capacity  # Number of buckets in the hash table
-        self.storage = [None] * capacity
+        self.storage = [None] * capacity # Empty spaces in the list
         self.count = 0
-
 
     def _hash(self, key):
         '''
@@ -55,13 +64,34 @@ class HashTable:
 
         Fill this in.
         '''
-        if self.count >= self.capacity:
-            self.resize()
-        for i in range(self.count, key, -1):
-            self.storage[i] = self.storage[i-1]
-        self.storage[key] = value
-        self.count +=1
+        # 1. Compute index/hash of key
+        index = self._hash_mod(key)
+        # print(index)
+        # 2. Go to the current index (node) with that hashed index
+        current_index = self.storage[index]
 
+        # 3. If current index (node) is empty:
+        if current_index is None:
+            # Create current index (node), add it, return
+            self.storage[index] = LinkedPair(key, value)
+        # If there is only a key and no value 
+        elif current_index.key == key: #if just one thing in the key and matches
+            # Update the value
+            current_index.value= value #to change the value
+        else:
+            # 4. Collision! Iterate to the end of the linked list at provided index
+            prev_index = current_index
+            # While loop is running, and the prev_index key matches the current key
+            while prev_index.next is not None and prev_index.key != key:
+                prev_index = prev_index.next
+                print(f"Collision occured: {prev_index} already has the same key ")
+            # If the keys match
+            if prev_index.key == key:
+                # Update the value
+                prev_index.value = value #to change the value
+            # Add a new previous index (node) at the end of the list with provided key/value
+            prev_index.next = LinkedPair(key, value)
+        
 
 
     def remove(self, key):
@@ -71,10 +101,18 @@ class HashTable:
         Print a warning if the key is not found.
 
         Fill this in.
-        '''
-        pass
+        ''' 
+        index = self._hash_mod(key)
 
+        # Check if a pair exists with matching keys
+        if self.storage[index] is not None and self.storage[index].key == key:
+            # If the pair exists, delete it
+            self.storage[index] = None
+        else:
+            # Print warning one isn't found
+            print("Warning at remove: Key does not exist.")
 
+        
     def retrieve(self, key):
         '''
         Retrieve the value stored with the given key.
@@ -83,9 +121,24 @@ class HashTable:
 
         Fill this in.
         '''
-        pass
+        # Finds the index using the hash function
+        index = self._hash_mod(key)
+        # Goes to the first slot with that hashed index
+        current_index = self.storage[index]
+        # print(f"this is at index", index)
 
+        # if current_index is None:
+        #     return None 
+        # Goes through the LinkedPair at this hashed index (node)
+        while current_index:
+            # Current index is now either requested kvp OR None
+            if current_index.key is not key:
+                current_index = current_index.next 
+            else:
+                return current_index.value 
+        return None
 
+       
     def resize(self):
         '''
         Doubles the capacity of the hash table and
@@ -93,11 +146,28 @@ class HashTable:
 
         Fill this in.
         '''
-        self.capacity *= 2
-        new_storage = [None] * self.capacity
-        for i in range(self.count):
-            new_storage[i] = self.storage[i]
-        self.storage = new_storage
+        old_storage = self.storage.copy()
+
+        # Replace everything and double capacity
+        self.capacity = self.capacity * 2
+        # Make new storage
+        self.storage = [None] * self.capacity
+
+        for bucket_item in old_storage:
+            while bucket_item is not None:
+                self.insert(bucket_item.key, bucket_item.value)
+                bucket_item = bucket_item.next
+
+        # new_storage = [None] * self.capacity
+
+        # for i in range(self.count):
+        #     new_storage[i] = self.storage[i]
+        #     self._hash_mod(new_storage[i])
+        # self.storage = new_storage
+
+        # # Put everything in new key/value pairs
+        # for bucket_item in old_storage:
+        #     self.insert(bucket_item.key, bucket_item.value)
 
 
 
